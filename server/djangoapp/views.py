@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 # from .models import related models
 # from .restapis import related methods
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from datetime import datetime
 import logging
@@ -28,12 +29,32 @@ def contact(request):
     return render(request, 'djangoapp/contact.html')
 
 # Create a `login_request` view to handle sign in request
-# def login_request(request):
+def login_request(request):
+    context = {}
+    if request.method == "GET":
+        return render(request, 'djangoapp/index.html', context)
+    elif request.method == "POST":
+        username = request.POST['username']
+        password = request.POST['password']
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            return redirect("djangoapp:index")
+        else:
+            messages.error(request, "Invalid username or password.")
+            return redirect("djangoapp:index")
+    
 # ...
 
 # Create a `logout_request` view to handle sign out request
-# def logout_request(request):
-# ...
+@login_required
+def logout_request(request):
+    logout(request)
+    return redirect("djangoapp:index")
+
+
+def registration_view(request):
+    return render(request, 'djangoapp/registration.html')
 
 # Create a `registration_request` view to handle sign up request
 # def registration_request(request):
